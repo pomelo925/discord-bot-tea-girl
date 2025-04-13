@@ -1,0 +1,44 @@
+#############################
+###    shared settings    ###
+#############################
+x-common-settings: &common
+  build: 
+    context: .  
+    dockerfile: Dockerfile
+  image: pomelo925/discord-bot:tea-girl
+
+  volumes:
+    # GUI
+    - $HOME/.Xauthority:/root/.Xauthority
+    - /tmp/.X11-unix:/tmp/.X11-unix
+
+    # workspace 
+    - ../discord-bot:/discord-bot
+
+  env_file:
+    - .env
+
+  environment:
+    - DISPLAY=${DISPLAY}
+    - DISCORD_TOKEN=${DISCORD_TOKEN}
+
+  tty: true
+  network_mode: host
+  privileged: true
+  stop_grace_period: 1s
+
+
+
+##############################
+###   Container Services   ###
+##############################
+services:
+  default:
+    <<: [*common]  
+    container_name: default
+    command: ["python", "bot.py"]
+
+  devel:
+      <<: [*common]
+      container_name: debug
+      command: ["tail", "-f", "/dev/null"]
