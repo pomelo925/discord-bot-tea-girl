@@ -1,27 +1,34 @@
-import discord  
-from discord.ext import commands 
+import asyncio
+import discord
+import os
 
-# 創建機器人對象，指定前綴為 "!"，即用戶發送消息時需要以 "!" 開頭
+from discord.ext import commands
+
+# Environment variables
 intents = discord.Intents.default()
-intents.message_content = True  # 啟用 message_content intent 來接收伺服器訊息
+intents.message_content = True
 
+# Instantiation
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-import os
-token = os.getenv("DISCORD_TOKEN")
-
-# 當機器人成功登入並準備好接收消息時，會執行此函數
+# Login
 @bot.event
 async def on_ready():
-    print(f'已登入為 {bot.user}') 
+    print(f"✅ Logged in as {bot.user}")
+    await bot.tree.sync()
 
-# 當收到 "ping" 訊息時，機器人會回應 "pong"
-@bot.command()
-async def ping(ctx):
-    await ctx.send("pong")
+async def main():
+    # Load extension
+    await bot.load_extension("admin.sync_cmd")
+    await bot.load_extension("cmds.game.whoami")
+    await bot.load_extension("cmds.game.pong")
+    await bot.load_extension("cmds.voice.tts")
+    # Launch bot
+    token = os.getenv("DISCORD_TOKEN")
+    if token:
+        await bot.start(token)
+    else:
+        print("❌ DISCORD_TOKEN not set")
 
-# 啟動機器人
-if token:
-    bot.run(token)
-else:
-    print("錯誤：未找到 Discord Bot Token，請檢查環境變數設定。")
+if __name__ == "__main__":
+    asyncio.run(main())
